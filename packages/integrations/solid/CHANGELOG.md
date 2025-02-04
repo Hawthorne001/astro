@@ -1,5 +1,165 @@
 # @astrojs/solid-js
 
+## 5.0.4
+
+### Patch Changes
+
+- [#13011](https://github.com/withastro/astro/pull/13011) [`cf30880`](https://github.com/withastro/astro/commit/cf3088060d45227dcb48e041c4ed5e0081d71398) Thanks [@ascorbic](https://github.com/ascorbic)! - Upgrades Vite
+
+## 5.0.3
+
+### Patch Changes
+
+- [#12887](https://github.com/withastro/astro/pull/12887) [`ea603ae`](https://github.com/withastro/astro/commit/ea603aec80531205d38fed11c525b3faa0271903) Thanks [@louisescher](https://github.com/louisescher)! - Adds a warning message when multiple JSX-based UI frameworks are being used without either the `include` or `exclude` property being set on the integration.
+
+## 5.0.2
+
+### Patch Changes
+
+- [#12923](https://github.com/withastro/astro/pull/12923) [`c7642fb`](https://github.com/withastro/astro/commit/c7642fb80b2a2b4d1ec18369b37700ff28b4c041) Thanks [@bluwy](https://github.com/bluwy)! - Adds the client entrypoint to `optimizeDeps.include`
+
+## 5.0.1
+
+### Patch Changes
+
+- [#12799](https://github.com/withastro/astro/pull/12799) [`739dbfb`](https://github.com/withastro/astro/commit/739dbfba4214107cf8fc40c702834dad33eed3b0) Thanks [@ascorbic](https://github.com/ascorbic)! - Upgrades Vite to pin esbuild
+
+## 5.0.0
+
+### Major Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates Vite dependency to v6 to match Astro v5
+
+### Minor Changes
+
+- [#12539](https://github.com/withastro/astro/pull/12539) [`827093e`](https://github.com/withastro/astro/commit/827093e6175549771f9d93ddf3f2be4c2c60f0b7) Thanks [@bluwy](https://github.com/bluwy)! - Drops node 21 support
+
+### Patch Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates vite-plugin-solid to handle Vite 6
+
+## 5.0.0-beta.1
+
+### Major Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates Vite dependency to v6 to match Astro v5
+
+### Minor Changes
+
+- [#12539](https://github.com/withastro/astro/pull/12539) [`827093e`](https://github.com/withastro/astro/commit/827093e6175549771f9d93ddf3f2be4c2c60f0b7) Thanks [@bluwy](https://github.com/bluwy)! - Drops node 21 support
+
+### Patch Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates vite-plugin-solid to handle Vite 6
+
+## 4.4.4
+
+### Patch Changes
+
+- [#12481](https://github.com/withastro/astro/pull/12481) [`8a46e80`](https://github.com/withastro/astro/commit/8a46e8074d6afb4a23badbd59ed239d526294e8c) Thanks [@marbrex](https://github.com/marbrex)! - Resolve `vite` peer dependency problem for strict package managers like **Yarn in PnP mode**.
+
+## 4.4.3
+
+### Patch Changes
+
+- [#12364](https://github.com/withastro/astro/pull/12364) [`9fc2ab8`](https://github.com/withastro/astro/commit/9fc2ab8cc848739a21bfa3f754e9bec4926dc034) Thanks [@jdtjenkins](https://github.com/jdtjenkins)! - Handles checking Svelte 5 component functions to avoid processing them as Solid components
+
+## 4.4.2
+
+### Patch Changes
+
+- [#11998](https://github.com/withastro/astro/pull/11998) [`082f450`](https://github.com/withastro/astro/commit/082f45094471d52e55c55d3291f541306d9388b1) Thanks [@johannesspohr](https://github.com/johannesspohr)! - Fix view transition state persistence
+
+## 4.4.1
+
+### Patch Changes
+
+- [#11624](https://github.com/withastro/astro/pull/11624) [`7adb350`](https://github.com/withastro/astro/commit/7adb350a37f3975c8c9db89a32bf63b9fd0b78c2) Thanks [@bluwy](https://github.com/bluwy)! - Prevents throwing errors when checking if a component is a Solid component in runtime
+
+## 4.4.0
+
+### Minor Changes
+
+- [#11234](https://github.com/withastro/astro/pull/11234) [`4385bf7`](https://github.com/withastro/astro/commit/4385bf7a4dc9c65bff53a30c660f7a909fcabfc9) Thanks [@ematipico](https://github.com/ematipico)! - Adds a new function called `addServerRenderer` to the Container API. Use this function to manually store renderers inside the instance of your container.
+
+  This new function should be preferred when using the Container API in environments like on-demand pages:
+
+  ```ts
+  import type { APIRoute } from 'astro';
+  import { experimental_AstroContainer } from 'astro/container';
+  import reactRenderer from '@astrojs/react/server.js';
+  import vueRenderer from '@astrojs/vue/server.js';
+  import ReactComponent from '../components/button.jsx';
+  import VueComponent from '../components/button.vue';
+
+  // MDX runtime is contained inside the Astro core
+  import mdxRenderer from 'astro/jsx/server.js';
+
+  // In case you need to import a custom renderer
+  import customRenderer from '../renderers/customRenderer.js';
+
+  export const GET: APIRoute = async (ctx) => {
+    const container = await experimental_AstroContainer.create();
+    container.addServerRenderer({ renderer: reactRenderer });
+    container.addServerRenderer({ renderer: vueRenderer });
+    container.addServerRenderer({ renderer: customRenderer });
+    // You can pass a custom name too
+    container.addServerRenderer({
+      name: 'customRenderer',
+      renderer: customRenderer,
+    });
+    const vueComponent = await container.renderToString(VueComponent);
+    return await container.renderToResponse(Component);
+  };
+  ```
+
+## 4.3.0
+
+### Minor Changes
+
+- [#11144](https://github.com/withastro/astro/pull/11144) [`803dd80`](https://github.com/withastro/astro/commit/803dd8061df02138b4928442bcb76e77dcf6f5e7) Thanks [@ematipico](https://github.com/ematipico)! - The integration now exposes a function called `getContainerRenderer`, that can be used inside the Container APIs to load the relative renderer.
+
+  ```js
+  import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+  import ReactWrapper from '../src/components/ReactWrapper.astro';
+  import { loadRenderers } from 'astro:container';
+  import { getContainerRenderer } from '@astrojs/react';
+
+  test('ReactWrapper with react renderer', async () => {
+    const renderers = await loadRenderers([getContainerRenderer()]);
+    const container = await AstroContainer.create({
+      renderers,
+    });
+    const result = await container.renderToString(ReactWrapper);
+
+    expect(result).toContain('Counter');
+    expect(result).toContain('Count: <!-- -->5');
+  });
+  ```
+
+## 4.2.0
+
+### Minor Changes
+
+- [#10937](https://github.com/withastro/astro/pull/10937) [`7179930`](https://github.com/withastro/astro/commit/7179930ac85828b1a32c0c07c7d4759ce60044f5) Thanks [@florian-lefebvre](https://github.com/florian-lefebvre)! - Adds a `devtools` option
+
+  You can enable the [official Solid Devtools](https://github.com/thetarnav/solid-devtools) while working in development mode by setting `devtools: true` in your `solid()` integration config and adding `solid-devtools` to your project dependencies:
+
+  ```bash
+  npm install solid-devtools
+  # yarn add solid-devtools
+  # pnpm add solid-devtools
+  ```
+
+  ```js
+  import { defineConfig } from 'astro/config';
+  import solid from '@astrojs/solid-js';
+
+  export default defineConfig({
+    integrations: [solid({ devtools: true })],
+  });
+  ```
+
 ## 4.1.0
 
 ### Minor Changes
@@ -50,7 +210,7 @@
 
 ### Patch Changes
 
-- [#9482](https://github.com/withastro/astro/pull/9482) [`72b26daf694b213918f02d0fcbf90ab5b7ebc31f`](https://github.com/withastro/astro/commit/72b26daf694b213918f02d0fcbf90ab5b7ebc31f) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Improves compatability with the [Qwik adapter](https://github.com/QwikDev/astro)
+- [#9482](https://github.com/withastro/astro/pull/9482) [`72b26daf694b213918f02d0fcbf90ab5b7ebc31f`](https://github.com/withastro/astro/commit/72b26daf694b213918f02d0fcbf90ab5b7ebc31f) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Improves compatibility with the [Qwik adapter](https://github.com/QwikDev/astro)
 
 - [#9479](https://github.com/withastro/astro/pull/9479) [`1baf0b0d3cbd0564954c2366a7278794fad6726e`](https://github.com/withastro/astro/commit/1baf0b0d3cbd0564954c2366a7278794fad6726e) Thanks [@sarah11918](https://github.com/sarah11918)! - Updates README
 

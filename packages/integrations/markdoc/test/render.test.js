@@ -117,6 +117,15 @@ describe('Markdoc - render', () => {
 
 			renderWithRootFolderContainingSpace(html);
 		});
+
+		it('renders content - with typographer option', async () => {
+			const fixture = await getFixture('render-typographer');
+			await fixture.build();
+
+			const html = await fixture.readFile('/index.html');
+
+			renderTypographerChecks(html);
+		});
 	});
 });
 
@@ -128,6 +137,8 @@ function renderNullChecks(html) {
 	const h2 = document.querySelector('h2');
 	assert.equal(h2.textContent, 'Post with render null');
 	assert.equal(h2.parentElement?.tagName, 'BODY');
+	const divWrapper = document.querySelector('.div-wrapper');
+	assert.equal(divWrapper.textContent, "I'm inside a div wrapper");
 }
 
 /** @param {string} html */
@@ -172,4 +183,17 @@ function renderWithRootFolderContainingSpace(html) {
 	assert.equal(h2.textContent, 'Simple post with root folder containing a space');
 	const p = document.querySelector('p');
 	assert.equal(p.textContent, 'This is a simple Markdoc post with root folder containing a space.');
+}
+
+/**
+ * @param {string} html
+ */
+function renderTypographerChecks(html) {
+	const { document } = parseHTML(html);
+
+	const h2 = document.querySelector('h2');
+	assert.equal(h2.textContent, 'Typographer’s post');
+
+	const p = document.querySelector('p');
+	assert.equal(p.textContent, 'This is a post to test the “typographer” option.');
 }

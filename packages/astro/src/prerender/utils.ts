@@ -1,22 +1,18 @@
-import type { AstroConfig } from '../@types/astro.js';
 import { getOutDirWithinCwd } from '../core/build/common.js';
-
-export function isServerLikeOutput(config: AstroConfig) {
-	return config.output === 'server' || config.output === 'hybrid';
-}
+import type { AstroSettings } from '../types/astro.js';
+import type { AstroConfig } from '../types/public/config.js';
 
 export function getPrerenderDefault(config: AstroConfig) {
 	return config.output !== 'server';
 }
 
 /**
- * Returns the correct output directory of hte SSR build based on the configuration
+ * Returns the correct output directory of the SSR build based on the configuration
  */
-export function getOutputDirectory(config: AstroConfig): URL {
-	const ssr = isServerLikeOutput(config);
-	if (ssr) {
-		return config.build.server;
+export function getOutputDirectory(settings: AstroSettings): URL {
+	if (settings.buildOutput === 'server') {
+		return settings.config.build.server;
 	} else {
-		return getOutDirWithinCwd(config.outDir);
+		return getOutDirWithinCwd(settings.config.outDir);
 	}
 }

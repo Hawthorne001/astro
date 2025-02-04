@@ -67,7 +67,7 @@ describe('Environment Variables', () => {
 							found = true;
 						}
 					}
-				})
+				}),
 			);
 
 			assert.equal(found, true, 'found the public env variable in the JS build');
@@ -88,7 +88,7 @@ describe('Environment Variables', () => {
 							found = true;
 						}
 					}
-				})
+				}),
 			);
 
 			assert.equal(found, false, 'found the private env variable in the JS build');
@@ -119,6 +119,15 @@ describe('Environment Variables', () => {
 			let indexHtml = await res.text();
 			let $ = cheerio.load(indexHtml);
 			assert.equal($('#base-url').text(), '/blog');
+		});
+
+		it('does not inject env into imported asset files', async () => {
+			let res = await fixture.fetch('/blog/');
+			assert.equal(res.status, 200);
+			let indexHtml = await res.text();
+			let $ = cheerio.load(indexHtml);
+			assert.equal($('#env').text(), 'A MYSTERY');
+			assert.equal($('#css').text(), 'good');
 		});
 	});
 });

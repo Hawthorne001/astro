@@ -102,7 +102,7 @@ describe.skip('Solid component build', { todo: 'Check why an error is thrown.' }
 
 		assert.equal(
 			firstHydrationScriptAt < firstHydrationEventAt,
-			'Position of first hydration event'
+			'Position of first hydration event',
 		);
 	});
 
@@ -119,7 +119,7 @@ describe.skip('Solid component build', { todo: 'Check why an error is thrown.' }
 		assert.equal(hydrationScriptCount, 1);
 		assert.equal(
 			firstHydrationScriptAt < firstHydrationEventAt,
-			'Position of first hydration event'
+			'Position of first hydration event',
 		);
 	});
 });
@@ -176,18 +176,19 @@ describe.skip('Solid component dev', { todo: 'Check why the test hangs.', skip: 
  * I chose to make this a function to avoid accidentally sharing regex state
  * between tests.
  *
- * NOTE: These scripts have ocassionally changed in the past. If the tests
+ * NOTE: These scripts have occasionally changed in the past. If the tests
  * start failing after a Solid version change, we may need to find a different
  * way to count the hydration scripts.
  */
 const createHydrationScriptRegex = (flags) => new RegExp(/_\$HY=/, flags);
 
 function countHydrationScripts(/** @type {string} */ html) {
+	// eslint-disable-next-line regexp/prefer-regexp-exec
 	return html.match(createHydrationScriptRegex('g'))?.length ?? 0;
 }
 
 function getFirstHydrationScriptLocation(/** @type {string} */ html) {
-	return html.match(createHydrationScriptRegex())?.index;
+	return createHydrationScriptRegex().exec(html)?.index;
 }
 
 /**
@@ -202,9 +203,10 @@ function countHydrationEvents(/** @type {string} */ html) {
 	// Number of times a component was hydrated during rendering
 	// We look for the hint "_$HY.r["
 
+	// eslint-disable-next-line regexp/prefer-regexp-exec
 	return html.match(createHydrationEventRegex('g'))?.length ?? 0;
 }
 
 function getFirstHydrationEventLocation(/** @type {string} */ html) {
-	return html.match(createHydrationEventRegex())?.index;
+	return createHydrationEventRegex().exec(html)?.index;
 }

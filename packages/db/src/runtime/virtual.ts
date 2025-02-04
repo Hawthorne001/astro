@@ -1,4 +1,3 @@
-import { LibsqlError } from '@libsql/client';
 import { sql as _sql } from 'drizzle-orm';
 import type {
 	BooleanColumnInput,
@@ -11,10 +10,6 @@ import type {
 	TextColumnOpts,
 } from '../core/types.js';
 
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-
-export type Database = Omit<LibSQLDatabase, 'transaction'>;
-
 function createColumn<S extends string, T extends Record<string, unknown>>(type: S, schema: T) {
 	return {
 		type,
@@ -23,10 +18,6 @@ function createColumn<S extends string, T extends Record<string, unknown>>(type:
 		 */
 		schema,
 	};
-}
-
-export function isDbError(err: unknown): err is LibsqlError {
-	return err instanceof LibsqlError;
 }
 
 export const column = {
@@ -94,3 +85,4 @@ export {
 } from 'drizzle-orm';
 
 export { alias } from 'drizzle-orm/sqlite-core';
+export { isDbError } from './utils.js';

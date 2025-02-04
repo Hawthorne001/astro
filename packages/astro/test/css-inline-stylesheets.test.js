@@ -15,6 +15,7 @@ describe('Setting inlineStylesheets to never in static output', () => {
 			site: 'https://test.dev/',
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'static',
+			outDir: './dist/static-inline-stylesheets-never',
 			build: {
 				inlineStylesheets: 'never',
 			},
@@ -53,6 +54,7 @@ describe('Setting inlineStylesheets to never in server output', () => {
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'server',
 			adapter: testAdapter(),
+			outDir: './dist/server-inline-stylesheets-never',
 			build: {
 				inlineStylesheets: 'never',
 			},
@@ -92,6 +94,7 @@ describe('Setting inlineStylesheets to auto in static output', () => {
 			site: 'https://test.info/',
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'static',
+			outDir: './dist/static-inline-stylesheets-auto',
 			build: {
 				inlineStylesheets: 'auto',
 			},
@@ -137,6 +140,7 @@ describe('Setting inlineStylesheets to auto in server output', () => {
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'server',
 			adapter: testAdapter(),
+			outDir: './dist/server-inline-stylesheets-auto',
 			build: {
 				inlineStylesheets: 'auto',
 			},
@@ -184,6 +188,7 @@ describe('Setting inlineStylesheets to always in static output', () => {
 			site: 'https://test.net/',
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'static',
+			outDir: './dist/static-inline-stylesheets-always',
 			build: {
 				inlineStylesheets: 'always',
 			},
@@ -221,6 +226,7 @@ describe('Setting inlineStylesheets to always in server output', () => {
 			root: './fixtures/css-inline-stylesheets/',
 			output: 'server',
 			adapter: testAdapter(),
+			outDir: './dist/server-inline-stylesheets-always',
 			build: {
 				inlineStylesheets: 'always',
 			},
@@ -278,7 +284,7 @@ async function stylesFromServer(app) {
 			const cssRequest = new Request(`http://example.com${href}`);
 			const cssResponse = await app.render(cssRequest);
 			return await cssResponse.text();
-		})
+		}),
 	);
 	const allLinkedStyles = allLinkedStylesheets.join('');
 

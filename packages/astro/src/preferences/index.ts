@@ -1,12 +1,11 @@
-import type { AstroConfig } from '../@types/astro.js';
-
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import dget from 'dlv';
-import { DEFAULT_PREFERENCES, type Preferences } from './defaults.js';
+import type { AstroConfig } from '../types/public/config.js';
+import { DEFAULT_PREFERENCES, type Preferences, type PublicPreferences } from './defaults.js';
 import { PreferenceStore } from './store.js';
 
 type DotKeys<T> = T extends object
@@ -25,6 +24,13 @@ export type GetDotKey<
 export type PreferenceLocation = 'global' | 'project';
 export interface PreferenceOptions {
 	location?: PreferenceLocation;
+	/**
+	 * If `true`, the server will be reloaded after setting the preference.
+	 * If `false`, the server will not be reloaded after setting the preference.
+	 *
+	 * Defaults to `true`.
+	 */
+	reloadServer?: boolean;
 }
 
 type DeepPartial<T> = T extends object
@@ -34,23 +40,24 @@ type DeepPartial<T> = T extends object
 	: T;
 
 export type PreferenceKey = DotKeys<Preferences>;
-export interface PreferenceList extends Record<PreferenceLocation, DeepPartial<Preferences>> {
+export interface PreferenceList extends Record<PreferenceLocation, DeepPartial<PublicPreferences>> {
 	fromAstroConfig: DeepPartial<Preferences>;
-	defaults: Preferences;
+	defaults: PublicPreferences;
 }
 
 export interface AstroPreferences {
 	get<Key extends PreferenceKey>(
 		key: Key,
-		opts?: PreferenceOptions
+		opts?: PreferenceOptions,
 	): Promise<GetDotKey<Preferences, Key>>;
 	set<Key extends PreferenceKey>(
 		key: Key,
 		value: GetDotKey<Preferences, Key>,
-		opts?: PreferenceOptions
+		opts?: PreferenceOptions,
 	): Promise<void>;
-	getAll(): Promise<Preferences>;
+	getAll(): Promise<PublicPreferences>;
 	list(opts?: PreferenceOptions): Promise<PreferenceList>;
+	ignoreNextPreferenceReload: boolean;
 }
 
 export function isValidKey(key: string): key is PreferenceKey {
@@ -58,6 +65,7 @@ export function isValidKey(key: string): key is PreferenceKey {
 }
 export function coerce(key: string, value: unknown) {
 	const type = typeof dget(DEFAULT_PREFERENCES, key);
+	// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 	switch (type) {
 		case 'string':
 			return value;
@@ -74,9 +82,9 @@ export function coerce(key: string, value: unknown) {
 	return value as any;
 }
 
-export default function createPreferences(config: AstroConfig): AstroPreferences {
+export default function createPreferences(config: AstroConfig, dotAstroDir: URL): AstroPreferences {
 	const global = new PreferenceStore(getGlobalPreferenceDir());
-	const project = new PreferenceStore(fileURLToPath(new URL('./.astro/', config.root)));
+	const project = new PreferenceStore(fileURLToPath(dotAstroDir));
 	const stores: Record<PreferenceLocation, PreferenceStore> = { global, project };
 
 	return {
@@ -84,36 +92,46 @@ export default function createPreferences(config: AstroConfig): AstroPreferences
 			if (!location) return project.get(key) ?? global.get(key) ?? dget(DEFAULT_PREFERENCES, key);
 			return stores[location].get(key);
 		},
-		async set(key, value, { location = 'project' } = {}) {
+		async set(key, value, { location = 'project', reloadServer = true } = {}) {
 			stores[location].set(key, value);
+
+			if (!reloadServer) {
+				this.ignoreNextPreferenceReload = true;
+			}
 		},
 		async getAll() {
-			return Object.assign(
+			const allPrefs = Object.assign(
 				{},
 				DEFAULT_PREFERENCES,
 				stores['global'].getAll(),
-				stores['project'].getAll()
+				stores['project'].getAll(),
 			);
+
+			const { _variables, ...prefs } = allPrefs;
+
+			return prefs;
 		},
 		async list() {
+			const { _variables, ...defaultPrefs } = DEFAULT_PREFERENCES;
 			return {
 				global: stores['global'].getAll(),
 				project: stores['project'].getAll(),
 				fromAstroConfig: mapFrom(DEFAULT_PREFERENCES, config),
-				defaults: DEFAULT_PREFERENCES,
+				defaults: defaultPrefs,
 			};
 
 			function mapFrom(defaults: Preferences, astroConfig: Record<string, any>) {
 				return Object.fromEntries(
-					Object.entries(defaults).map(([key, _]) => [key, astroConfig[key]])
+					Object.entries(defaults).map(([key, _]) => [key, astroConfig[key]]),
 				);
 			}
 		},
+		ignoreNextPreferenceReload: false,
 	};
 }
 
 // Adapted from https://github.com/sindresorhus/env-paths
-export function getGlobalPreferenceDir() {
+function getGlobalPreferenceDir() {
 	const name = 'astro';
 	const homedir = os.homedir();
 	const macos = () => path.join(homedir, 'Library', 'Preferences', name);
@@ -125,6 +143,7 @@ export function getGlobalPreferenceDir() {
 		const { XDG_CONFIG_HOME = path.join(homedir, '.config') } = process.env;
 		return path.join(XDG_CONFIG_HOME, name);
 	};
+	// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 	switch (process.platform) {
 		case 'darwin':
 			return macos();

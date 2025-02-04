@@ -1,6 +1,7 @@
-// @ts-expect-error
-import { loadDevToolbarApps } from 'astro:dev-toolbar';
-import type { DevToolbarApp as DevToolbarAppDefinition } from '../../../@types/astro.js';
+// @ts-expect-error - This module is private and untyped
+import { loadDevToolbarApps } from 'astro:toolbar:internal';
+import type { ResolvedDevToolbarApp as DevToolbarAppDefinition } from '../../../types/public/toolbar.js';
+import { ToolbarAppEventTarget } from './helpers.js';
 import { settings } from './settings.js';
 import type { AstroDevToolbar, DevToolbarApp } from './toolbar.js';
 
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 			DevToolbarBadge,
 			DevToolbarIcon,
 			DevToolbarSelect,
+			DevToolbarRadioCheckbox,
 		},
 	] = await Promise.all([
 		loadDevToolbarApps() as DevToolbarAppDefinition[],
@@ -47,20 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	customElements.define('astro-dev-toolbar-badge', DevToolbarBadge);
 	customElements.define('astro-dev-toolbar-icon', DevToolbarIcon);
 	customElements.define('astro-dev-toolbar-select', DevToolbarSelect);
-
-	// Add deprecated names
-	// TODO: Remove in Astro 5.0
-	const deprecated = (Parent: any) => class extends Parent {};
-	customElements.define('astro-dev-overlay', deprecated(AstroDevToolbar));
-	customElements.define('astro-dev-overlay-window', deprecated(DevToolbarWindow));
-	customElements.define('astro-dev-overlay-plugin-canvas', deprecated(DevToolbarCanvas));
-	customElements.define('astro-dev-overlay-tooltip', deprecated(DevToolbarTooltip));
-	customElements.define('astro-dev-overlay-highlight', deprecated(DevToolbarHighlight));
-	customElements.define('astro-dev-overlay-card', deprecated(DevToolbarCard));
-	customElements.define('astro-dev-overlay-toggle', deprecated(DevToolbarToggle));
-	customElements.define('astro-dev-overlay-button', deprecated(DevToolbarButton));
-	customElements.define('astro-dev-overlay-badge', deprecated(DevToolbarBadge));
-	customElements.define('astro-dev-overlay-icon', deprecated(DevToolbarIcon));
+	customElements.define('astro-dev-toolbar-radio-checkbox', DevToolbarRadioCheckbox);
 
 	overlay = document.createElement('astro-dev-toolbar');
 
@@ -74,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	} as const;
 
 	const prepareApp = (appDefinition: DevToolbarAppDefinition, builtIn: boolean): DevToolbarApp => {
-		const eventTarget = new EventTarget();
+		const eventTarget = new ToolbarAppEventTarget();
 		const app: DevToolbarApp = {
 			...appDefinition,
 			builtIn: builtIn,
@@ -89,8 +78,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 			if (!(evt instanceof CustomEvent)) return;
 
 			const target = overlay.shadowRoot?.querySelector(`[data-app-id="${app.id}"]`);
-			const notificationElement = target?.querySelector('.notification');
-			if (!target || !notificationElement) return;
+			if (!target) return;
+			const notificationElement = target.querySelector('.notification');
+			if (!notificationElement) return;
 
 			let newState = evt.detail.state ?? true;
 			let level = notificationLevels.includes(evt?.detail?.level)
@@ -117,9 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 		};
 
 		eventTarget.addEventListener('toggle-app', onToggleApp);
-		// Deprecated
-		// TODO: Remove in Astro 5.0
-		eventTarget.addEventListener('toggle-plugin', onToggleApp);
 
 		return app;
 	};
@@ -266,11 +253,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 											hiddenApps.some(
 												(p) =>
 													p.notification.state === true &&
-													p.notification.level === notificationLevel
-											)
+													p.notification.level === notificationLevel,
+											),
 										) ?? 'error',
 								},
-							})
+							}),
 						);
 					});
 				}
@@ -282,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	const apps: DevToolbarApp[] = [
 		...[astroDevToolApp, astroXrayApp, astroAuditApp, astroSettingsApp, astroMoreApp].map(
-			(appDef) => prepareApp(appDef, true)
+			(appDef) => prepareApp(appDef, true),
 		),
 		...customAppsDefinitions.map((appDef) => prepareApp(appDef, false)),
 	];

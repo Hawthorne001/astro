@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { testFactory } from './test-utils.js';
 
-const test = testFactory({
+const test = testFactory(import.meta.url, {
 	root: './fixtures/dev-toolbar/',
 });
 
@@ -44,6 +44,64 @@ test.describe('Dev Toolbar - Audits', () => {
 		await appButton.click();
 	});
 
+	test('does not warn about perf issue for below the fold image after mutation when body is unscrollable', async ({
+		page,
+		astro,
+	}) => {
+		await page.goto(astro.resolveUrl('/audits-perf-body-unscrollable'));
+
+		const toolbar = page.locator('astro-dev-toolbar');
+		const appButton = toolbar.locator('button[data-app-id="astro:audit"]');
+		await appButton.click();
+
+		const auditCanvas = toolbar.locator('astro-dev-toolbar-app-canvas[data-app-id="astro:audit"]');
+		const auditHighlights = auditCanvas.locator('astro-dev-toolbar-highlight');
+
+		expect(auditHighlights).toHaveCount(1);
+
+		await page.click('body');
+
+		let consolePromise = page.waitForEvent('console');
+		await page.locator('#mutation-button').click();
+		await consolePromise;
+
+		await appButton.click();
+
+		expect(auditHighlights).toHaveCount(1);
+	});
+
+	test('does not warn about perf issue for below the fold image in relative container', async ({
+		page,
+		astro,
+	}) => {
+		await page.goto(astro.resolveUrl('/audits-perf-relative'));
+
+		const toolbar = page.locator('astro-dev-toolbar');
+		const appButton = toolbar.locator('button[data-app-id="astro:audit"]');
+		await appButton.click();
+
+		const auditCanvas = toolbar.locator('astro-dev-toolbar-app-canvas[data-app-id="astro:audit"]');
+		const auditHighlights = auditCanvas.locator('astro-dev-toolbar-highlight');
+
+		expect(auditHighlights).toHaveCount(0);
+	});
+
+	test('can warn about perf issue for below the fold image in absolute container', async ({
+		page,
+		astro,
+	}) => {
+		await page.goto(astro.resolveUrl('/audits-perf-absolute'));
+
+		const toolbar = page.locator('astro-dev-toolbar');
+		const appButton = toolbar.locator('button[data-app-id="astro:audit"]');
+		await appButton.click();
+
+		const auditCanvas = toolbar.locator('astro-dev-toolbar-app-canvas[data-app-id="astro:audit"]');
+		const auditHighlights = auditCanvas.locator('astro-dev-toolbar-highlight');
+
+		expect(auditHighlights).toHaveCount(1);
+	});
+
 	test('can handle mutations', async ({ page, astro }) => {
 		await page.goto(astro.resolveUrl('/audits-mutations'));
 
@@ -79,7 +137,7 @@ test.describe('Dev Toolbar - Audits', () => {
 				'astro:dev-toolbar:settings',
 				JSON.stringify({
 					verbose: true,
-				})
+				}),
 			);
 		});
 
@@ -93,7 +151,7 @@ test.describe('Dev Toolbar - Audits', () => {
 		const badButton = page.locator('#bad-button');
 
 		let consolePromise = page.waitForEvent('console', (msg) =>
-			msg.text().includes('Rerunning audit lints')
+			msg.text().includes('Rerunning audit lints'),
 		);
 		await badButton.click({ clickCount: 5 });
 		await consolePromise;
@@ -102,7 +160,7 @@ test.describe('Dev Toolbar - Audits', () => {
 
 		expect(
 			logs.filter((log) => log.includes('Rerunning audit lints because the DOM has been updated'))
-				.length === 1
+				.length === 1,
 		).toBe(true);
 	});
 
@@ -114,7 +172,7 @@ test.describe('Dev Toolbar - Audits', () => {
 				'astro:dev-toolbar:settings',
 				JSON.stringify({
 					verbose: true,
-				})
+				}),
 			);
 		});
 
@@ -153,12 +211,26 @@ test.describe('Dev Toolbar - Audits', () => {
 		// Make sure we only reran audits once
 		expect(
 			logs.filter((log) => log.includes('Rerunning audit lints because the DOM has been updated'))
-				.length === 1
+				.length === 1,
 		).toBe(true);
 	});
 
 	test('does not warn for non-interactive element', async ({ page, astro }) => {
 		await page.goto(astro.resolveUrl('/a11y-exceptions'));
+
+		const toolbar = page.locator('astro-dev-toolbar');
+		const appButton = toolbar.locator('button[data-app-id="astro:audit"]');
+		await appButton.click();
+
+		const auditCanvas = toolbar.locator('astro-dev-toolbar-app-canvas[data-app-id="astro:audit"]');
+		const auditHighlights = auditCanvas.locator('astro-dev-toolbar-highlight');
+
+		const count = await auditHighlights.count();
+		expect(count).toEqual(0);
+	});
+
+	test('does not warn about label with valid labelable elements', async ({ page, astro }) => {
+		await page.goto(astro.resolveUrl('/a11y-labelable'));
 
 		const toolbar = page.locator('astro-dev-toolbar');
 		const appButton = toolbar.locator('button[data-app-id="astro:audit"]');

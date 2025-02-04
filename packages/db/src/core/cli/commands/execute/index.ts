@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
-import { LibsqlError } from '@libsql/client';
 import type { AstroConfig } from 'astro';
 import { green } from 'kleur/colors';
 import type { Arguments } from 'yargs-parser';
+import { isDbError } from '../../../../runtime/utils.js';
 import {
 	EXEC_DEFAULT_EXPORT_ERROR,
 	EXEC_ERROR,
@@ -14,8 +14,8 @@ import {
 	getStudioVirtualModContents,
 } from '../../../integration/vite-plugin-db.js';
 import { bundleFile, importBundledFile } from '../../../load-file.js';
-import { getManagedAppTokenOrExit } from '../../../tokens.js';
-import { type DBConfig } from '../../../types.js';
+import type { DBConfig } from '../../../types.js';
+import { getManagedRemoteToken } from '../../../utils.js';
 
 export async function cmd({
 	astroConfig,
@@ -40,7 +40,7 @@ export async function cmd({
 
 	let virtualModContents: string;
 	if (flags.remote) {
-		const appToken = await getManagedAppTokenOrExit(flags.token);
+		const appToken = await getManagedRemoteToken(flags.token);
 		virtualModContents = getStudioVirtualModContents({
 			tables: dbConfig.tables ?? {},
 			appToken: appToken.token,
@@ -51,8 +51,6 @@ export async function cmd({
 		virtualModContents = getLocalVirtualModContents({
 			tables: dbConfig.tables ?? {},
 			root: astroConfig.root,
-			shouldSeed: false,
-			seedFiles: [],
 		});
 	}
 	const { code } = await bundleFile({ virtualModContents, root: astroConfig.root, fileUrl });
@@ -66,9 +64,7 @@ export async function cmd({
 		await mod.default();
 		console.info(`${green('✔')} File run successfully.`);
 	} catch (e) {
-		if (e instanceof LibsqlError) {
-			throw new Error(EXEC_ERROR(e.message));
-		}
-		throw e;
+		if (isDbError(e)) throw new Error(EXEC_ERROR(e.message));
+		else throw e;
 	}
 }

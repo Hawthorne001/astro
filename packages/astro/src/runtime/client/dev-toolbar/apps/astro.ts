@@ -1,4 +1,7 @@
-import type { DevToolbarApp, DevToolbarMetadata } from '../../../../@types/astro.js';
+import type {
+	DevToolbarMetadata,
+	ResolvedDevToolbarApp,
+} from '../../../../types/public/toolbar.js';
 import { type Icon, isDefinedIcon } from '../ui-library/icons.js';
 import { colorForIntegration, iconForIntegration } from './utils/icons.js';
 import {
@@ -88,6 +91,9 @@ export default {
 					link: 'https://astro.build/chat',
 				},
 			];
+
+			const hasNewerVersion = (window as DevToolbarMetadata).__astro_dev_toolbar__
+				.latestAstroVersion;
 
 			const windowComponent = createWindowElement(
 				`<style>
@@ -333,6 +339,14 @@ export default {
 				<astro-dev-toolbar-badge badge-style="gray" size="large">${
 					(window as DevToolbarMetadata).__astro_dev_toolbar__.version
 				}</astro-dev-toolbar-badge>
+				${
+					hasNewerVersion
+						? `<astro-dev-toolbar-badge badge-style="green" size="large">${
+								(window as DevToolbarMetadata).__astro_dev_toolbar__.latestAstroVersion
+							} available!</astro-dev-toolbar-badge>
+						`
+						: ''
+				}
 				</section>
 				<astro-dev-toolbar-button id="copy-debug-button">Copy debug info <astro-dev-toolbar-icon icon="copy" /></astro-dev-toolbar-button>
 			</header>
@@ -357,12 +371,12 @@ export default {
 						(link) =>
 							`<a href="${link.link}" target="_blank"><astro-dev-toolbar-icon ${
 								isDefinedIcon(link.icon) ? `icon="${link.icon}">` : `>${link.icon}`
-							}</astro-dev-toolbar-icon>${link.name}</a>`
+							}</astro-dev-toolbar-icon>${link.name}</a>`,
 					)
 					.join('')}
 				</section>
 			</div>
-		`
+		`,
 			);
 
 			const copyDebugButton =
@@ -370,7 +384,7 @@ export default {
 
 			copyDebugButton?.addEventListener('click', () => {
 				navigator.clipboard.writeText(
-					'```\n' + (window as DevToolbarMetadata).__astro_dev_toolbar__.debugInfo + '\n```'
+					'```\n' + (window as DevToolbarMetadata).__astro_dev_toolbar__.debugInfo + '\n```',
 				);
 				copyDebugButton.textContent = 'Copied to clipboard!';
 
@@ -420,7 +434,7 @@ export default {
 					integrationImage.append(icon);
 					integrationImage.style.setProperty(
 						'--integration-image-background',
-						colorForIntegration()
+						colorForIntegration(),
 					);
 				}
 
@@ -449,4 +463,4 @@ export default {
 			integrationList.append(fragment);
 		}
 	},
-} satisfies DevToolbarApp;
+} satisfies ResolvedDevToolbarApp;

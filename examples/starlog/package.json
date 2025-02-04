@@ -4,14 +4,13 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^4.6.3",
-    "sass": "^1.69.5",
-    "sharp": "^0.32.6"
+    "astro": "^5.2.5",
+    "sass": "^1.83.4",
+    "sharp": "^0.33.3"
   }
 }

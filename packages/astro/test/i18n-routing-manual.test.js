@@ -52,14 +52,17 @@ describe('Dev server manual routing', () => {
 		text = await response.text();
 		assert.equal(text.includes('Hola.'), true);
 	});
+
+	it('should call the middleware for 404.astro pages', async () => {
+		const response = await fixture.fetch('/redirect-me');
+		assert.equal(response.status, 200);
+	});
 });
 
 // SSG
 describe('SSG manual routing', () => {
 	/** @type {import('./test-utils').Fixture} */
 	let fixture;
-	/** @type {import('./test-utils').DevServer} */
-	let devServer;
 
 	before(async () => {
 		fixture = await loadFixture({

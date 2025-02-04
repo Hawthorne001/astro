@@ -62,7 +62,7 @@ const interactiveElements = [
 	...MAYBE_INTERACTIVE.keys(),
 ];
 
-const labellableElements = ['input', 'meter', 'output', 'progress', 'select', 'textarea'];
+const labellableElements = ['button', 'input', 'meter', 'output', 'progress', 'select', 'textarea'];
 
 const aria_non_interactive_roles = [
 	'alert',
@@ -101,6 +101,7 @@ const aria_non_interactive_roles = [
 	'rowheader',
 	'search',
 	'status',
+	'tabpanel',
 	'term',
 	'timer',
 	'toolbar',
@@ -125,12 +126,6 @@ const a11y_required_content = [
 
 const a11y_distracting_elements = ['blink', 'marquee'];
 
-// Unused for now
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const a11y_nested_implicit_semantics = new Map([
-	['header', 'banner'],
-	['footer', 'contentinfo'],
-]);
 const a11y_implicit_semantics = new Map([
 	['a', 'link'],
 	['area', 'link'],
@@ -197,16 +192,18 @@ const input_type_to_implicit_role = new Map([
 	['url', 'textbox'],
 ]);
 
+// All the WAI-ARIA 1.2 attributes from https://www.w3.org/TR/wai-aria-1.2/#state_prop_def
 const ariaAttributes = new Set(
-	'activedescendant atomic autocomplete busy checked colcount colindex colspan controls current describedby description details disabled dropeffect errormessage expanded flowto grabbed haspopup hidden invalid keyshortcuts label labelledby level live modal multiline multiselectable orientation owns placeholder posinset pressed readonly relevant required roledescription rowcount rowindex rowspan selected setsize sort valuemax valuemin valuenow valuetext'.split(
-		' '
-	)
+	'activedescendant atomic autocomplete busy checked colcount colindex colspan controls current describedby details disabled dropeffect errormessage expanded flowto grabbed haspopup hidden invalid keyshortcuts label labelledby level live modal multiline multiselectable orientation owns placeholder posinset pressed readonly relevant required roledescription rowcount rowindex rowspan selected setsize sort valuemax valuemin valuenow valuetext'.split(
+		' ',
+	),
 );
 
+// All the WAI-ARIA 1.2 role attribute values from https://www.w3.org/TR/wai-aria-1.2/#role_definitions
 const ariaRoles = new Set(
-	'alert alertdialog application article banner button cell checkbox columnheader combobox complementary contentinfo definition dialog directory document feed figure form grid gridcell group heading img link list listbox listitem log main marquee math menu menubar menuitem menuitemcheckbox menuitemradio navigation none note option presentation progressbar radio radiogroup region row rowgroup rowheader scrollbar search searchbox separator slider spinbutton status switch tab tablist tabpanel textbox timer toolbar tooltip tree treegrid treeitem'.split(
-		' '
-	)
+	'alert alertdialog application article banner blockquote button caption cell checkbox code columnheader combobox command complementary composite contentinfo definition deletion dialog directory document emphasis feed figure form generic grid gridcell group heading img input insertion landmark link list listbox listitem log main marquee math meter menu menubar menuitem menuitemcheckbox menuitemradio navigation none note option paragraph presentation progressbar radio radiogroup range region roletype row rowgroup rowheader scrollbar search searchbox section sectionhead select separator slider spinbutton status strong structure subscript superscript switch tab table tablist tabpanel term textbox time timer toolbar tooltip tree treegrid treeitem widget window'.split(
+		' ',
+	),
 );
 
 function isInteractive(element: Element): boolean {
@@ -320,7 +317,7 @@ export const a11y: AuditRuleWithSelector[] = [
 			if (!tracks.length) return true;
 
 			const hasCaptionTrack = Array.from(tracks).some(
-				(track) => track.getAttribute('kind') === 'captions'
+				(track) => track.getAttribute('kind') === 'captions',
 			);
 
 			return !hasCaptionTrack;
@@ -343,7 +340,7 @@ export const a11y: AuditRuleWithSelector[] = [
 				a11y_required_attributes[element.localName as keyof typeof a11y_required_attributes];
 
 			const missingAttributes = requiredAttributes.filter(
-				(attribute) => !element.hasAttribute(attribute)
+				(attribute) => !element.hasAttribute(attribute),
 			);
 
 			return `${
@@ -503,7 +500,7 @@ export const a11y: AuditRuleWithSelector[] = [
 		description:
 			'The `tabindex` attribute should only be used on interactive elements, as it can be confusing for keyboard-only users to navigate through non-interactive elements. If your element is only conditionally interactive, consider using `tabindex="-1"` to make it focusable only when it is actually interactive.',
 		message: (element) => `${element.localName} elements should not have \`tabindex\` attribute`,
-		selector: '[tabindex]',
+		selector: '[tabindex]:not([role="tabpanel"])',
 		match(element) {
 			// Scrollable elements are considered interactive
 			// See: https://www.w3.org/WAI/standards-guidelines/act/rules/0ssw9k/proposed/
@@ -566,7 +563,7 @@ export const a11y: AuditRuleWithSelector[] = [
 			return `${
 				element.localName
 			} element has ARIA attributes that are not supported by its role (${role}): ${unsupported.join(
-				', '
+				', ',
 			)}`;
 		},
 		selector: '*',
@@ -580,7 +577,7 @@ export const a11y: AuditRuleWithSelector[] = [
 				const attributes = getAttributeObject(element);
 				const unsupportedAttributes = aria.keys().filter((attribute) => !(attribute in props));
 				const invalidAttributes: string[] = Object.keys(attributes).filter(
-					(key) => key.startsWith('aria-') && unsupportedAttributes.includes(key as any)
+					(key) => key.startsWith('aria-') && unsupportedAttributes.includes(key as any),
 				);
 				if (invalidAttributes.length > 0) {
 					(element as any).__astro_role = elementRole;
@@ -623,19 +620,6 @@ export const a11y: AuditRuleWithSelector[] = [
 	},
 ];
 
-// Unused for now
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const a11y_labelable = [
-	'button',
-	'input',
-	'keygen',
-	'meter',
-	'output',
-	'progress',
-	'select',
-	'textarea',
-];
-
 /**
  * Exceptions to the rule which follows common A11y conventions
  * TODO make this configurable by the user
@@ -661,7 +645,6 @@ function input_implicit_role(attributes: Record<string, string>) {
 	return input_type_to_implicit_role.get(type);
 }
 
-/** @param {Map<string, import('#compiler').Attribute>} attribute_map */
 function menuitem_implicit_role(attributes: Record<string, string>) {
 	if (!('type' in attributes)) return;
 	const { type } = attributes;
@@ -697,15 +680,10 @@ function getAttributeObject(element: Element): Record<string, string> {
 	return obj;
 }
 
-/**
- * @param {import('aria-query').ARIARoleDefinitionKey} role
- * @param {string} tag_name
- * @param {Map<string, import('#compiler').Attribute>} attribute_map
- */
 function is_semantic_role_element(
-	role: string,
+	role: ARIARoleDefinitionKey,
 	tag_name: string,
-	attributes: Record<string, string>
+	attributes: Record<string, string>,
 ) {
 	for (const [schema, ax_object] of elementAXObjects.entries()) {
 		if (

@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-
+import nodejs from "@astrojs/node"
 // https://astro.build/config
 export default defineConfig({
 	i18n: {
@@ -9,7 +9,7 @@ export default defineConfig({
 			"fr",
 			"es",
 			{
-				path: "portugues",
+				path: "portuguese",
 				codes: [
 					"pt-AO",
 					"pt",
@@ -17,4 +17,6 @@ export default defineConfig({
 				],
 		}],
 	},
+	output: 'static',
+	adapter: nodejs({ mode: 'standalone' }),
 });

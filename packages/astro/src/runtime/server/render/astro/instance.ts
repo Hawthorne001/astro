@@ -1,7 +1,7 @@
-import type { SSRResult } from '../../../../@types/astro.js';
 import type { ComponentSlots } from '../slot.js';
-import type { AstroComponentFactory, AstroFactoryReturnValue } from './factory.js';
+import type { AstroComponentFactory } from './factory.js';
 
+import type { SSRResult } from '../../../../types/public/internal.js';
 import { isPromise } from '../../util.js';
 import { renderChild } from '../any.js';
 import type { RenderDestination } from '../common.js';
@@ -24,7 +24,7 @@ export class AstroComponentInstance {
 		result: SSRResult,
 		props: ComponentProps,
 		slots: ComponentSlots,
-		factory: AstroComponentFactory
+		factory: AstroComponentFactory,
 	) {
 		this.result = result;
 		this.props = props;
@@ -49,23 +49,25 @@ export class AstroComponentInstance {
 	async init(result: SSRResult) {
 		if (this.returnValue !== undefined) return this.returnValue;
 		this.returnValue = this.factory(result, this.props, this.slotValues);
+		// Save the resolved value after promise is resolved for optimization
+		if (isPromise(this.returnValue)) {
+			this.returnValue
+				.then((resolved) => {
+					this.returnValue = resolved;
+				})
+				.catch(() => {
+					// Ignore errors and appease unhandledrejection error
+				});
+		}
 		return this.returnValue;
 	}
 
 	async render(destination: RenderDestination) {
-		if (this.returnValue === undefined) {
-			await this.init(this.result);
-		}
-
-		let value: Promise<AstroFactoryReturnValue> | AstroFactoryReturnValue | undefined =
-			this.returnValue;
-		if (isPromise(value)) {
-			value = await value;
-		}
-		if (isHeadAndContent(value)) {
-			await value.content.render(destination);
+		const returnValue = await this.init(this.result);
+		if (isHeadAndContent(returnValue)) {
+			await returnValue.content.render(destination);
 		} else {
-			await renderChild(destination, value);
+			await renderChild(destination, returnValue);
 		}
 	}
 }
@@ -75,9 +77,8 @@ function validateComponentProps(props: any, displayName: string) {
 	if (props != null) {
 		for (const prop of Object.keys(props)) {
 			if (prop.startsWith('client:')) {
-				// eslint-disable-next-line
 				console.warn(
-					`You are attempting to render <${displayName} ${prop} />, but ${displayName} is an Astro component. Astro components do not render in the client and should not have a hydration directive. Please use a framework component for client rendering.`
+					`You are attempting to render <${displayName} ${prop} />, but ${displayName} is an Astro component. Astro components do not render in the client and should not have a hydration directive. Please use a framework component for client rendering.`,
 				);
 			}
 		}
@@ -89,7 +90,7 @@ export function createAstroComponentInstance(
 	displayName: string,
 	factory: AstroComponentFactory,
 	props: ComponentProps,
-	slots: any = {}
+	slots: any = {},
 ) {
 	validateComponentProps(props, displayName);
 	const instance = new AstroComponentInstance(result, props, slots, factory);
@@ -100,5 +101,5 @@ export function createAstroComponentInstance(
 }
 
 export function isAstroComponentInstance(obj: unknown): obj is AstroComponentInstance {
-	return typeof obj === 'object' && !!(obj as any)[astroComponentInstanceSym];
+	return typeof obj === 'object' && obj !== null && !!(obj as any)[astroComponentInstanceSym];
 }

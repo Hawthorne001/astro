@@ -68,7 +68,7 @@ function extractOrientation(exifBlock: Uint8Array, isBigEndian: boolean) {
         return
       }
 
-      // unsinged int has 2 bytes per component
+      // unsigned int has 2 bytes per component
       // if there would more than 4 bytes in total it's a pointer
       const numberOfComponents = readUInt(block, 32, 4, isBigEndian)
       if (numberOfComponents !== 1) {
@@ -122,7 +122,8 @@ export const JPG: IImage = {
 
       // Every JPEG block must begin with a 0xFF
       if (input[i] !== 0xff) {
-        input = input.slice(1)
+        // Change from upstream: fix non-0xFF blocks skipping
+        input = input.slice(i)
         continue
       }
 

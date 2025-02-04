@@ -1,15 +1,43 @@
 import * as assert from 'node:assert/strict';
-import os from 'node:os';
 import { describe, it } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import * as cheerio from 'cheerio';
 
 import { attachContentServerListeners } from '../../../dist/content/server-listeners.js';
-import { createFsWithFallback, createRequestAndResponse, runInContainer } from '../test-utils.js';
+import { createFixture, createRequestAndResponse, runInContainer } from '../test-utils.js';
 
-const root = new URL('../../fixtures/content/', import.meta.url);
+const baseFileTree = {
+	'astro.config.mjs': `\
+import mdx from '@astrojs/mdx';
+export default {
+	integrations: [mdx()],
+	legacy: {
+		// Enable legacy content collections as we test layout fields
+		collections: true
+	}
+};
+`,
+	'/src/content/blog/promo/_launch-week-styles.css': `\
+body {
+	font-family: 'Comic Sans MS', sans-serif;
+}
+`,
+	'/src/content/blog/promo/launch-week.mdx': `\
+---
+title: 'Launch week!'
+description: 'Join us for the exciting launch of SPACE BLOG'
+publishedDate: 'Sat May 21 2022 00:00:00 GMT-0400 (Eastern Daylight Time)'
+tags: ['announcement']
+---
 
-const _describe = os.platform() === 'win32' ? describe.skip : describe;
+import './_launch-week-styles.css';
+
+Join us for the space blog launch!
+
+- THIS THURSDAY
+- Houston, TX
+- Dress code: **interstellar casual** ✨
+`,
+};
 
 /** @type {typeof runInContainer} */
 async function runInContainerWithContentListeners(params, callback) {
@@ -19,11 +47,11 @@ async function runInContainerWithContentListeners(params, callback) {
 	});
 }
 
-_describe('Content Collections - render()', () => {
+describe('Content Collections - render()', () => {
 	it('can be called in a page component', async () => {
-		const fs = createFsWithFallback(
-			{
-				'/src/content/config.ts': `
+		const fixture = await createFixture({
+			...baseFileTree,
+			'/src/content/config.ts': `
 					import { z, defineCollection } from 'astro:content';
 
 					const blog = defineCollection({
@@ -35,7 +63,7 @@ _describe('Content Collections - render()', () => {
 
 					export const collections = { blog };
 				`,
-				'/src/pages/index.astro': `
+			'/src/pages/index.astro': `
 					---
 					import { getCollection } from 'astro:content';
 					const blog = await getCollection('blog');
@@ -50,15 +78,12 @@ _describe('Content Collections - render()', () => {
 						</body>
 					</html>
 				`,
-			},
-			root
-		);
+		});
 
 		await runInContainerWithContentListeners(
 			{
-				fs,
 				inlineConfig: {
-					root: fileURLToPath(root),
+					root: fixture.path,
 					vite: { server: { middlewareMode: true } },
 				},
 			},
@@ -77,26 +102,14 @@ _describe('Content Collections - render()', () => {
 
 				// Rendered the styles
 				assert.equal($('style').length, 1);
-			}
+			},
 		);
 	});
 
 	it('can be used in a layout component', async () => {
-		const fs = createFsWithFallback(
-			{
-				// Loading the content config with `astro:content` oddly
-				// causes this test to fail. Spoof a different src/content entry
-				// to ensure `existsSync` checks pass.
-				// TODO: revisit after addressing this issue
-				// https://github.com/withastro/astro/issues/6121
-				'/src/content/blog/promo/launch-week.mdx': `---
-title: Launch Week
-description: Astro is launching this week!
----
-# Launch Week
-- [x] Launch Astro
-- [ ] Celebrate`,
-				'/src/components/Layout.astro': `
+		const fixture = await createFixture({
+			...baseFileTree,
+			'/src/components/Layout.astro': `
 					---
 					import { getCollection } from 'astro:content';
 					const blog = await getCollection('blog');
@@ -114,7 +127,7 @@ description: Astro is launching this week!
 					</html>
 
 				`,
-				'/src/pages/index.astro': `
+			'/src/pages/index.astro': `
 					---
 					import Layout from '../components/Layout.astro';
 					---
@@ -122,15 +135,12 @@ description: Astro is launching this week!
 						<h1 slot="title">Index page</h2>
 					</Layout>
 				`,
-			},
-			root
-		);
+		});
 
 		await runInContainerWithContentListeners(
 			{
-				fs,
 				inlineConfig: {
-					root: fileURLToPath(root),
+					root: fixture.path,
 					vite: { server: { middlewareMode: true } },
 				},
 			},
@@ -149,14 +159,14 @@ description: Astro is launching this week!
 
 				// Rendered the styles
 				assert.equal($('style').length, 1);
-			}
+			},
 		);
 	});
 
 	it('can be used in a slot', async () => {
-		const fs = createFsWithFallback(
-			{
-				'/src/content/config.ts': `
+		const fixture = await createFixture({
+			...baseFileTree,
+			'/src/content.config.ts': `
 					import { z, defineCollection } from 'astro:content';
 
 					const blog = defineCollection({
@@ -168,7 +178,7 @@ description: Astro is launching this week!
 
 					export const collections = { blog };
 				`,
-				'/src/components/Layout.astro': `
+			'/src/components/Layout.astro': `
 					<html>
 						<head></head>
 						<body>
@@ -179,7 +189,7 @@ description: Astro is launching this week!
 						</body>
 					</html>
 				`,
-				'/src/pages/index.astro': `
+			'/src/pages/index.astro': `
 					---
 					import Layout from '../components/Layout.astro';
 					import { getCollection } from 'astro:content';
@@ -192,15 +202,12 @@ description: Astro is launching this week!
 						<Content slot="main" />
 					</Layout>
 				`,
-			},
-			root
-		);
+		});
 
 		await runInContainerWithContentListeners(
 			{
-				fs,
 				inlineConfig: {
-					root: fileURLToPath(root),
+					root: fixture.path,
 					vite: { server: { middlewareMode: true } },
 				},
 			},
@@ -219,14 +226,14 @@ description: Astro is launching this week!
 
 				// Rendered the styles
 				assert.equal($('style').length, 1);
-			}
+			},
 		);
 	});
 
 	it('can be called from any js/ts file', async () => {
-		const fs = createFsWithFallback(
-			{
-				'/src/content/config.ts': `
+		const fixture = await createFixture({
+			...baseFileTree,
+			'/src/content.config.ts': `
 					import { z, defineCollection } from 'astro:content';
 
 					const blog = defineCollection({
@@ -238,7 +245,7 @@ description: Astro is launching this week!
 
 					export const collections = { blog };
 				`,
-				'/src/launch-week.ts': `
+			'/src/launch-week.ts': `
 					import { getCollection } from 'astro:content';
 
 					export let Content;
@@ -249,7 +256,7 @@ description: Astro is launching this week!
 
 					Content = mod.Content;
 				`,
-				'/src/pages/index.astro': `
+			'/src/pages/index.astro': `
 					---
 					import { Content } from '../launch-week.ts';
 					---
@@ -261,15 +268,12 @@ description: Astro is launching this week!
 						</body>
 					</html>
 				`,
-			},
-			root
-		);
+		});
 
 		await runInContainerWithContentListeners(
 			{
-				fs,
 				inlineConfig: {
-					root: fileURLToPath(root),
+					root: fixture.path,
 					vite: { server: { middlewareMode: true } },
 				},
 			},
@@ -288,7 +292,7 @@ description: Astro is launching this week!
 
 				// Rendered the styles
 				assert.equal($('style').length, 1);
-			}
+			},
 		);
 	});
 });

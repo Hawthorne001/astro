@@ -1,19 +1,23 @@
 import type * as http from 'node:http';
 import type { AddressInfo } from 'node:net';
-import type { AstroInlineConfig, AstroSettings } from '../../@types/astro.js';
+import type { AstroSettings } from '../../types/astro.js';
 
 import nodeFs from 'node:fs';
 import * as vite from 'vite';
-import { injectImageEndpoint } from '../../assets/endpoint/config.js';
 import {
 	runHookConfigDone,
 	runHookConfigSetup,
 	runHookServerDone,
 	runHookServerStart,
-} from '../../integrations/index.js';
+} from '../../integrations/hooks.js';
+import type { AstroInlineConfig } from '../../types/public/config.js';
+import { createDevelopmentManifest } from '../../vite-plugin-astro-server/plugin.js';
 import { createVite } from '../create-vite.js';
 import type { Logger } from '../logger/core.js';
 import { apply as applyPolyfill } from '../polyfill.js';
+import { createRoutesList } from '../routing/index.js';
+import { syncInternal } from '../sync/index.js';
+import { warnMissingAdapter } from './adapter-validation.js';
 
 export interface Container {
 	fs: typeof nodeFs;
@@ -50,15 +54,26 @@ export async function createContainer({
 		isRestart,
 	});
 
-	settings = injectImageEndpoint(settings, 'dev');
-
 	const {
 		base,
 		server: { host, headers, open: serverOpen },
 	} = settings.config;
+
+	// serverOpen = true, isRestart = false
+	// when astro dev --open command is run the first time
+	// expected behavior: spawn a new tab
+	// ------------------------------------------------------
+	// serverOpen = true, isRestart = true
+	// when config file is saved
+	// expected behavior: do not spawn a new tab
+	// ------------------------------------------------------
+	// Non-config files don't reach this point
+	const isServerOpenURL = typeof serverOpen == 'string' && !isRestart;
+	const isServerOpenBoolean = serverOpen && !isRestart;
+
 	// Open server to the correct path. We pass the `base` here as we didn't pass the
 	// base to the initial Vite config
-	const open = typeof serverOpen == 'string' ? serverOpen : serverOpen ? base : false;
+	const open = isServerOpenURL ? serverOpen : isServerOpenBoolean ? base : false;
 
 	// The client entrypoint for renderers. Since these are imported dynamically
 	// we need to tell Vite to preoptimize them.
@@ -66,18 +81,49 @@ export async function createContainer({
 		.map((r) => r.clientEntrypoint)
 		.filter(Boolean) as string[];
 
+	// Create the route manifest already outside of Vite so that `runHookConfigDone` can use it to inform integrations of the build output
+	const routesList = await createRoutesList({ settings, fsMod: fs }, logger, { dev: true });
+	const manifest = createDevelopmentManifest(settings);
+
+	await runHookConfigDone({ settings, logger, command: 'dev' });
+
+	warnMissingAdapter(logger, settings);
+
+	const mode = inlineConfig?.mode ?? 'development';
 	const viteConfig = await createVite(
 		{
-			mode: 'development',
 			server: { host, headers, open },
 			optimizeDeps: {
 				include: rendererClientEntries,
 			},
 		},
-		{ settings, logger, mode: 'dev', command: 'dev', fs }
+		{
+			settings,
+			logger,
+			mode,
+			command: 'dev',
+			fs,
+			sync: false,
+			routesList,
+			manifest,
+		},
 	);
-	await runHookConfigDone({ settings, logger });
 	const viteServer = await vite.createServer(viteConfig);
+
+	await syncInternal({
+		settings,
+		mode,
+		logger,
+		skip: {
+			content: !isRestart,
+			cleanup: true,
+		},
+		force: inlineConfig?.force,
+		routesList,
+		manifest,
+		command: 'dev',
+		watcher: viteServer.watcher,
+	});
 
 	const container: Container = {
 		inlineConfig: inlineConfig ?? {},

@@ -60,7 +60,7 @@ describe('Astro Markdown plugins', () => {
 
 			const smartypantsHtml = await fixture.readFile('/with-smartypants/index.html');
 			const $2 = cheerio.load(smartypantsHtml);
-			assert.equal($2('p').html(), '”Smartypants” is — awesome');
+			assert.equal($2('p').html(), '“Smartypants” is — awesome');
 
 			testRemark(gfmHtml);
 			testRehype(gfmHtml, '#github-flavored-markdown-test');
@@ -82,7 +82,7 @@ describe('Astro Markdown plugins', () => {
 			const $ = cheerio.load(html);
 
 			// test 1: smartypants applied correctly
-			assert.equal($('p').html(), '”Smartypants” is — awesome');
+			assert.equal($('p').html(), '“Smartypants” is — awesome');
 
 			testRemark(html);
 			testRehype(html, '#smartypants-test');
@@ -119,6 +119,32 @@ describe('Astro Markdown plugins', () => {
 
 		testRemark(html);
 		testRehype(html, '#smartypants-test');
+	});
+
+	describe('content layer plugins', () => {
+		let fixture;
+		before(async () => {
+			fixture = await loadFixture({
+				root: './fixtures/content-layer-remark-plugins/',
+			});
+			await fixture.build();
+		});
+
+		it('passes untransformed frontmatter to remark plugins', async () => {
+			const html = await fixture.readFile('/test1/index.html');
+			const $ = cheerio.load(html);
+			assert.equal($('p').text(), 'Not transformed');
+		});
+
+		it('processes empty markdown content with remark plugins', async () => {
+			const html = await fixture.readFile('/empty-content/index.html');
+			const $ = cheerio.load(html);
+			assert.equal($('h1').text(), 'Test Empty Markdown');
+			assert.equal(
+				$('#frontmatter-custom-property').text(),
+				'Generated property via remark plugin!',
+			);
+		});
 	});
 });
 

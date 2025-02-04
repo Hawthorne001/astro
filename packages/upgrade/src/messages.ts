@@ -1,8 +1,8 @@
 /* eslint no-console: 'off' */
 import { color, label, spinner as load } from '@astrojs/cli-kit';
 import { align } from '@astrojs/cli-kit/utils';
+import detectPackageManager from 'preferred-pm';
 import terminalLink from 'terminal-link';
-import detectPackageManager from 'which-pm-runs';
 import type { PackageInfo } from './actions/context.js';
 import { shell } from './shell.js';
 
@@ -14,13 +14,13 @@ let _registry: string;
 export async function getRegistry(): Promise<string> {
 	if (_registry) return _registry;
 	const fallback = 'https://registry.npmjs.org';
-	const packageManager = detectPackageManager()?.name || 'npm';
+	const packageManager = (await detectPackageManager(process.cwd()))?.name || 'npm';
 	try {
 		const { stdout } = await shell(packageManager, ['config', 'get', 'registry']);
 		_registry = stdout?.trim()?.replace(/\/$/, '') || fallback;
 		// Detect cases where the shell command returned a non-URL (e.g. a warning)
 		if (!new URL(_registry).host) _registry = fallback;
-	} catch (e) {
+	} catch {
 		_registry = fallback;
 	}
 	return _registry;
@@ -86,8 +86,8 @@ export const newline = () => stdout.write('\n');
 export const banner = async () =>
 	log(
 		`\n${label('astro', color.bgGreen, color.black)}  ${color.bold(
-			'Integration upgrade in progress.'
-		)}`
+			'Integration upgrade in progress.',
+		)}`,
 	);
 
 export const bannerAbort = () =>
@@ -105,18 +105,21 @@ export const info = async (prefix: string, text: string, version = '') => {
 		log(`${' '.repeat(9)}${color.dim(text)} ${color.reset(version)}`);
 	} else {
 		log(
-			`${' '.repeat(5)} ${color.cyan(symbol)}  ${prefix} ${color.dim(text)} ${color.reset(version)}`
+			`${' '.repeat(5)} ${color.cyan(symbol)}  ${prefix} ${color.dim(text)} ${color.reset(version)}`,
 		);
 	}
 };
+
 export const upgrade = async (packageInfo: PackageInfo, text: string) => {
-	const { name, isMajor = false, targetVersion } = packageInfo;
+	const { name, isMajor = false, targetVersion, currentVersion } = packageInfo;
 
 	const bg = isMajor ? (v: string) => color.bgYellow(color.black(` ${v} `)) : color.green;
 	const style = isMajor ? color.yellow : color.green;
 	const symbol = isMajor ? '▲' : '●';
+
+	const fromVersion = currentVersion.replace(/^\D+/, '');
 	const toVersion = targetVersion.replace(/^\D+/, '');
-	const version = `v${toVersion}`;
+	const version = `from v${fromVersion} to v${toVersion}`;
 
 	const length = 12 + name.length + text.length + version.length;
 	if (length > stdout.columns) {

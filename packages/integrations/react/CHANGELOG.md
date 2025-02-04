@@ -1,5 +1,321 @@
 # @astrojs/react
 
+## 4.2.0
+
+### Minor Changes
+
+- [#13036](https://github.com/withastro/astro/pull/13036) [`3c90d8f`](https://github.com/withastro/astro/commit/3c90d8f3e0baba1463a9022c2e8c777204ad2250) Thanks [@artmsilva](https://github.com/artmsilva)! - Adds experimental support for disabling streaming
+
+  This is useful to support libraries that are not compatible with streaming such as some CSS-in-JS libraries. To disable streaming for all React components in your project, set `experimentalDisableStreaming: true` as a configuration option for `@astrojs/react`:
+
+  ```diff
+  // astro.config.mjs
+  import { defineConfig } from 'astro/config';
+  import react from '@astrojs/react';
+
+  export default defineConfig({
+    integrations: [
+      react({
+  +      experimentalDisableStreaming: true,
+      }),
+    ],
+  });
+  ```
+
+## 4.1.6
+
+### Patch Changes
+
+- [#12996](https://github.com/withastro/astro/pull/12996) [`80c6801`](https://github.com/withastro/astro/commit/80c6801b4f2b9da44ed69d6da7e4dbd4d65aae69) Thanks [@bluwy](https://github.com/bluwy)! - Removes hardcoded `ssr.external: ['react-dom/server', 'react-dom/client']` config that causes issues with adapters that bundle all dependencies (e.g. Cloudflare). These externals should already be inferred by default by Vite when deploying to a server environment.
+
+- [#13011](https://github.com/withastro/astro/pull/13011) [`cf30880`](https://github.com/withastro/astro/commit/cf3088060d45227dcb48e041c4ed5e0081d71398) Thanks [@ascorbic](https://github.com/ascorbic)! - Upgrades Vite
+
+## 4.1.5
+
+### Patch Changes
+
+- [#12887](https://github.com/withastro/astro/pull/12887) [`ea603ae`](https://github.com/withastro/astro/commit/ea603aec80531205d38fed11c525b3faa0271903) Thanks [@louisescher](https://github.com/louisescher)! - Adds a warning message when multiple JSX-based UI frameworks are being used without either the `include` or `exclude` property being set on the integration.
+
+## 4.1.4
+
+### Patch Changes
+
+- [#12923](https://github.com/withastro/astro/pull/12923) [`c7642fb`](https://github.com/withastro/astro/commit/c7642fb80b2a2b4d1ec18369b37700ff28b4c041) Thanks [@bluwy](https://github.com/bluwy)! - Removes react-specific entrypoints in `optimizeDeps.include` and rely on `@vitejs/plugin-react` to add
+
+## 4.1.3
+
+### Patch Changes
+
+- [#12948](https://github.com/withastro/astro/pull/12948) [`51ab7b5`](https://github.com/withastro/astro/commit/51ab7b5722acecce722fb404ca6bc152a109c9e5) Thanks [@bluwy](https://github.com/bluwy)! - Supports checking for React 19 components
+
+## 4.1.2
+
+### Patch Changes
+
+- [#12799](https://github.com/withastro/astro/pull/12799) [`739dbfb`](https://github.com/withastro/astro/commit/739dbfba4214107cf8fc40c702834dad33eed3b0) Thanks [@ascorbic](https://github.com/ascorbic)! - Upgrades Vite to pin esbuild
+
+## 4.1.1
+
+### Patch Changes
+
+- [#12755](https://github.com/withastro/astro/pull/12755) [`391df0e`](https://github.com/withastro/astro/commit/391df0e410aecc4bb8871c42548e2d9634c5ef3a) Thanks [@matthewp](https://github.com/matthewp)! - Preoptimize React compiler runtime
+
+## 4.1.0
+
+### Minor Changes
+
+- [#12678](https://github.com/withastro/astro/pull/12678) [`97c9265`](https://github.com/withastro/astro/commit/97c9265754b78af12ad1e399cc75028435028dfa) Thanks [@bskimball](https://github.com/bskimball)! - Add React 19 stable to peer dependencies
+
+## 4.0.0
+
+### Major Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates Vite dependency to v6 to match Astro v5
+
+### Minor Changes
+
+- [#12539](https://github.com/withastro/astro/pull/12539) [`827093e`](https://github.com/withastro/astro/commit/827093e6175549771f9d93ddf3f2be4c2c60f0b7) Thanks [@bluwy](https://github.com/bluwy)! - Drops node 21 support
+
+- [#12510](https://github.com/withastro/astro/pull/12510) [`14feaf3`](https://github.com/withastro/astro/commit/14feaf30e1a4266b8422865722a4478d39202404) Thanks [@bholmesdev](https://github.com/bholmesdev)! - Changes the generated URL query param from `_astroAction` to `_action` when submitting a form using Actions. This avoids leaking the framework name into the URL bar, which may be considered a security issue.
+
+## 4.0.0-beta.2
+
+### Major Changes
+
+- [#12524](https://github.com/withastro/astro/pull/12524) [`9f44019`](https://github.com/withastro/astro/commit/9f440196dc39f36fce0198bf4c97131160e5bcc1) Thanks [@bluwy](https://github.com/bluwy)! - Updates Vite dependency to v6 to match Astro v5
+
+### Minor Changes
+
+- [#12539](https://github.com/withastro/astro/pull/12539) [`827093e`](https://github.com/withastro/astro/commit/827093e6175549771f9d93ddf3f2be4c2c60f0b7) Thanks [@bluwy](https://github.com/bluwy)! - Drops node 21 support
+
+## 3.7.0-beta.1
+
+### Minor Changes
+
+- [#12510](https://github.com/withastro/astro/pull/12510) [`14feaf3`](https://github.com/withastro/astro/commit/14feaf30e1a4266b8422865722a4478d39202404) Thanks [@bholmesdev](https://github.com/bholmesdev)! - Changes the generated URL query param from `_astroAction` to `_action` when submitting a form using Actions. This avoids leaking the framework name into the URL bar, which may be considered a security issue.
+
+## 3.6.3
+
+### Patch Changes
+
+- [#12481](https://github.com/withastro/astro/pull/12481) [`8a46e80`](https://github.com/withastro/astro/commit/8a46e8074d6afb4a23badbd59ed239d526294e8c) Thanks [@marbrex](https://github.com/marbrex)! - Resolve `vite` peer dependency problem for strict package managers like **Yarn in PnP mode**.
+
+## 3.6.2
+
+### Patch Changes
+
+- [#11624](https://github.com/withastro/astro/pull/11624) [`7adb350`](https://github.com/withastro/astro/commit/7adb350a37f3975c8c9db89a32bf63b9fd0b78c2) Thanks [@bluwy](https://github.com/bluwy)! - Prevents throwing errors when checking if a component is a React component in runtime
+
+## 3.6.1
+
+### Patch Changes
+
+- [#11571](https://github.com/withastro/astro/pull/11571) [`1c3265a`](https://github.com/withastro/astro/commit/1c3265a8c9c0b1b1bd597f756b63463146bacc3a) Thanks [@bholmesdev](https://github.com/bholmesdev)! - **BREAKING CHANGE to the experimental Actions API only.** Install the latest `@astrojs/react` integration as well if you're using React 19 features.
+
+  Make `.safe()` the default return value for actions. This means `{ data, error }` will be returned when calling an action directly. If you prefer to get the data while allowing errors to throw, chain the `.orThrow()` modifier.
+
+  ```ts
+  import { actions } from 'astro:actions';
+
+  // Before
+  const { data, error } = await actions.like.safe();
+  // After
+  const { data, error } = await actions.like();
+
+  // Before
+  const newLikes = await actions.like();
+  // After
+  const newLikes = await actions.like.orThrow();
+  ```
+
+  ## Migration
+
+  To migrate your existing action calls:
+
+  - Remove `.safe` from existing _safe_ action calls
+  - Add `.orThrow` to existing _unsafe_ action calls
+
+- [#11570](https://github.com/withastro/astro/pull/11570) [`84189b6`](https://github.com/withastro/astro/commit/84189b6511dc2a14bcfe608696f56a64c2046f39) Thanks [@bholmesdev](https://github.com/bholmesdev)! - **BREAKING CHANGE to the experimental Actions API only.** Install the latest `@astrojs/react` integration as well if you're using React 19 features.
+
+  Updates the Astro Actions fallback to support `action={actions.name}` instead of using `getActionProps().` This will submit a form to the server in zero-JS scenarios using a search parameter:
+
+  ```astro
+  ---
+  import { actions } from 'astro:actions';
+  ---
+
+  <form action={actions.logOut}>
+    <!--output: action="?_astroAction=logOut"-->
+    <button>Log Out</button>
+  </form>
+  ```
+
+  You may also construct form action URLs using string concatenation, or by using the `URL()` constructor, with the an action's `.queryString` property:
+
+  ```astro
+  ---
+  import { actions } from 'astro:actions';
+
+  const confirmationUrl = new URL('/confirmation', Astro.url);
+  confirmationUrl.search = actions.queryString;
+  ---
+
+  <form method="POST" action={confirmationUrl.pathname}>
+    <button>Submit</button>
+  </form>
+  ```
+
+  ## Migration
+
+  `getActionProps()` is now deprecated. To use the new fallback pattern, remove the `getActionProps()` input from your form and pass your action function to the form `action` attribute:
+
+  ```diff
+  ---
+  import {
+    actions,
+  - getActionProps,
+  } from 'astro:actions';
+  ---
+
+  + <form method="POST" action={actions.logOut}>
+  - <form method="POST">
+  - <input {...getActionProps(actions.logOut)} />
+    <button>Log Out</button>
+  </form>
+  ```
+
+## 3.6.0
+
+### Minor Changes
+
+- [#11234](https://github.com/withastro/astro/pull/11234) [`4385bf7`](https://github.com/withastro/astro/commit/4385bf7a4dc9c65bff53a30c660f7a909fcabfc9) Thanks [@ematipico](https://github.com/ematipico)! - Adds a new function called `addServerRenderer` to the Container API. Use this function to manually store renderers inside the instance of your container.
+
+  This new function should be preferred when using the Container API in environments like on-demand pages:
+
+  ```ts
+  import type { APIRoute } from 'astro';
+  import { experimental_AstroContainer } from 'astro/container';
+  import reactRenderer from '@astrojs/react/server.js';
+  import vueRenderer from '@astrojs/vue/server.js';
+  import ReactComponent from '../components/button.jsx';
+  import VueComponent from '../components/button.vue';
+
+  // MDX runtime is contained inside the Astro core
+  import mdxRenderer from 'astro/jsx/server.js';
+
+  // In case you need to import a custom renderer
+  import customRenderer from '../renderers/customRenderer.js';
+
+  export const GET: APIRoute = async (ctx) => {
+    const container = await experimental_AstroContainer.create();
+    container.addServerRenderer({ renderer: reactRenderer });
+    container.addServerRenderer({ renderer: vueRenderer });
+    container.addServerRenderer({ renderer: customRenderer });
+    // You can pass a custom name too
+    container.addServerRenderer({
+      name: 'customRenderer',
+      renderer: customRenderer,
+    });
+    const vueComponent = await container.renderToString(VueComponent);
+    return await container.renderToResponse(Component);
+  };
+  ```
+
+## 3.5.0
+
+### Minor Changes
+
+- [#11144](https://github.com/withastro/astro/pull/11144) [`803dd80`](https://github.com/withastro/astro/commit/803dd8061df02138b4928442bcb76e77dcf6f5e7) Thanks [@ematipico](https://github.com/ematipico)! - The integration now exposes a function called `getContainerRenderer`, that can be used inside the Container APIs to load the relative renderer.
+
+  ```js
+  import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+  import ReactWrapper from '../src/components/ReactWrapper.astro';
+  import { loadRenderers } from 'astro:container';
+  import { getContainerRenderer } from '@astrojs/react';
+
+  test('ReactWrapper with react renderer', async () => {
+    const renderers = await loadRenderers([getContainerRenderer()]);
+    const container = await AstroContainer.create({
+      renderers,
+    });
+    const result = await container.renderToString(ReactWrapper);
+
+    expect(result).toContain('Counter');
+    expect(result).toContain('Count: <!-- -->5');
+  });
+  ```
+
+## 3.4.0
+
+### Minor Changes
+
+- [#11071](https://github.com/withastro/astro/pull/11071) [`8ca7c73`](https://github.com/withastro/astro/commit/8ca7c731dea894e77f84b314ebe3a141d5daa918) Thanks [@bholmesdev](https://github.com/bholmesdev)! - Adds two new functions `experimental_getActionState()` and `experimental_withState()` to support [the React 19 `useActionState()` hook](https://react.dev/reference/react/useActionState) when using Astro Actions. This introduces progressive enhancement when calling an Action with the `withState()` utility.
+
+  This example calls a `like` action that accepts a `postId` and returns the number of likes. Pass this action to the `experimental_withState()` function to apply progressive enhancement info, and apply to `useActionState()` to track the result:
+
+  ```tsx
+  import { actions } from 'astro:actions';
+  import { experimental_withState } from '@astrojs/react/actions';
+
+  export function Like({ postId }: { postId: string }) {
+    const [state, action, pending] = useActionState(
+      experimental_withState(actions.like),
+      0, // initial likes
+    );
+
+    return (
+      <form action={action}>
+        <input type="hidden" name="postId" value={postId} />
+        <button disabled={pending}>{state} ❤️</button>
+      </form>
+    );
+  }
+  ```
+
+  You can also access the state stored by `useActionState()` from your action `handler`. Call `experimental_getActionState()` with the API context, and optionally apply a type to the result:
+
+  ```ts
+  import { defineAction, z } from 'astro:actions';
+  import { experimental_getActionState } from '@astrojs/react/actions';
+
+  export const server = {
+    like: defineAction({
+      input: z.object({
+        postId: z.string(),
+      }),
+      handler: async ({ postId }, ctx) => {
+        const currentLikes = experimental_getActionState<number>(ctx);
+        // write to database
+        return currentLikes + 1;
+      },
+    }),
+  };
+  ```
+
+## 3.3.4
+
+### Patch Changes
+
+- [#10986](https://github.com/withastro/astro/pull/10986) [`4d16381`](https://github.com/withastro/astro/commit/4d163811e1a25affb2c3d9adb3af650b7f1c91b6) Thanks [@emish89](https://github.com/emish89)! - Fixes incorrect `peerDependencies` for `@types/react` and `@types/react-dom`
+
+## 3.3.3
+
+### Patch Changes
+
+- [#10942](https://github.com/withastro/astro/pull/10942) [`d47baa4`](https://github.com/withastro/astro/commit/d47baa466aaeedde9c79ed5375d0be34762ac8b6) Thanks [@matthewp](https://github.com/matthewp)! - Updates package to support React 19 beta
+
+## 3.3.2
+
+### Patch Changes
+
+- [#10893](https://github.com/withastro/astro/pull/10893) [`fd7a9ed`](https://github.com/withastro/astro/commit/fd7a9ed3379a123f02f297b69fa5da0053e84a89) Thanks [@Angrigo](https://github.com/Angrigo)! - Removes using deprecated `ReactDOMServer.renderToStaticNodeStream` API
+
+## 3.3.1
+
+### Patch Changes
+
+- [#10855](https://github.com/withastro/astro/pull/10855) [`f6bddd3`](https://github.com/withastro/astro/commit/f6bddd3a155cd10a9f85c92d43b1af8b74786a42) Thanks [@lamATnginx](https://github.com/lamATnginx)! - Fix Redoc usage in React integration
+
 ## 3.3.0
 
 ### Minor Changes
@@ -56,7 +372,7 @@
 
 ### Patch Changes
 
-- [#9482](https://github.com/withastro/astro/pull/9482) [`72b26daf694b213918f02d0fcbf90ab5b7ebc31f`](https://github.com/withastro/astro/commit/72b26daf694b213918f02d0fcbf90ab5b7ebc31f) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Improves compatability with the [Qwik adapter](https://github.com/QwikDev/astro)
+- [#9482](https://github.com/withastro/astro/pull/9482) [`72b26daf694b213918f02d0fcbf90ab5b7ebc31f`](https://github.com/withastro/astro/commit/72b26daf694b213918f02d0fcbf90ab5b7ebc31f) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Improves compatibility with the [Qwik adapter](https://github.com/QwikDev/astro)
 
 - [#9479](https://github.com/withastro/astro/pull/9479) [`1baf0b0d3cbd0564954c2366a7278794fad6726e`](https://github.com/withastro/astro/commit/1baf0b0d3cbd0564954c2366a7278794fad6726e) Thanks [@sarah11918](https://github.com/sarah11918)! - Updates README
 
@@ -72,13 +388,13 @@
 
 ### Patch Changes
 
-- [#9122](https://github.com/withastro/astro/pull/9122) [`1c48ed286`](https://github.com/withastro/astro/commit/1c48ed286538ab9e354eca4e4dcd7c6385c96721) Thanks [@bluwy](https://github.com/bluwy)! - Adds Vite 5 support. There are no breaking changes from Astro. Check the [Vite migration guide](https://vitejs.dev/guide/migration.html) for details of the breaking changes from Vite instead.
+- [#9122](https://github.com/withastro/astro/pull/9122) [`1c48ed286`](https://github.com/withastro/astro/commit/1c48ed286538ab9e354eca4e4dcd7c6385c96721) Thanks [@bluwy](https://github.com/bluwy)! - Adds Vite 5 support. There are no breaking changes from Astro. Check the [Vite migration guide](https://vite.dev/guide/migration.html) for details of the breaking changes from Vite instead.
 
 ## 3.0.7-beta.0
 
 ### Patch Changes
 
-- [#9122](https://github.com/withastro/astro/pull/9122) [`1c48ed286`](https://github.com/withastro/astro/commit/1c48ed286538ab9e354eca4e4dcd7c6385c96721) Thanks [@bluwy](https://github.com/bluwy)! - Adds Vite 5 support. There are no breaking changes from Astro. Check the [Vite migration guide](https://vitejs.dev/guide/migration.html) for details of the breaking changes from Vite instead.
+- [#9122](https://github.com/withastro/astro/pull/9122) [`1c48ed286`](https://github.com/withastro/astro/commit/1c48ed286538ab9e354eca4e4dcd7c6385c96721) Thanks [@bluwy](https://github.com/bluwy)! - Adds Vite 5 support. There are no breaking changes from Astro. Check the [Vite migration guide](https://vite.dev/guide/migration.html) for details of the breaking changes from Vite instead.
 
 ## 3.0.6
 

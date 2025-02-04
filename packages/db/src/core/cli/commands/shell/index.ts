@@ -5,11 +5,11 @@ import {
 	createLocalDatabaseClient,
 	createRemoteDatabaseClient,
 } from '../../../../runtime/db-client.js';
+import { normalizeDatabaseUrl } from '../../../../runtime/index.js';
 import { DB_PATH } from '../../../consts.js';
 import { SHELL_QUERY_MISSING_ERROR } from '../../../errors.js';
-import { getManagedAppTokenOrExit } from '../../../tokens.js';
 import type { DBConfigInput } from '../../../types.js';
-import { getRemoteDatabaseUrl } from '../../../utils.js';
+import { getAstroEnv, getManagedRemoteToken, getRemoteDatabaseInfo } from '../../../utils.js';
 
 export async function cmd({
 	flags,
@@ -24,14 +24,24 @@ export async function cmd({
 		console.error(SHELL_QUERY_MISSING_ERROR);
 		process.exit(1);
 	}
+	const dbInfo = getRemoteDatabaseInfo();
 	if (flags.remote) {
-		const appToken = await getManagedAppTokenOrExit(flags.token);
-		const db = createRemoteDatabaseClient(appToken.token, getRemoteDatabaseUrl());
+		const appToken = await getManagedRemoteToken(flags.token, dbInfo);
+		const db = createRemoteDatabaseClient({
+			dbType: dbInfo.type,
+			remoteUrl: dbInfo.url,
+			appToken: appToken.token,
+		});
 		const result = await db.run(sql.raw(query));
 		await appToken.destroy();
 		console.log(result);
 	} else {
-		const db = createLocalDatabaseClient({ dbUrl: new URL(DB_PATH, astroConfig.root).href });
+		const { ASTRO_DATABASE_FILE } = getAstroEnv();
+		const dbUrl = normalizeDatabaseUrl(
+			ASTRO_DATABASE_FILE,
+			new URL(DB_PATH, astroConfig.root).href,
+		);
+		const db = createLocalDatabaseClient({ dbUrl, enableTransactions: dbInfo.type === 'libsql' });
 		const result = await db.run(sql.raw(query));
 		console.log(result);
 	}

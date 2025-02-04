@@ -12,12 +12,18 @@ describe('Sourcemap', async () => {
 
 	it('Builds sourcemap', async () => {
 		const dir = await fixture.readdir('./_astro');
-		const counterMap = dir.find((file) => file.match(/^Counter\.\w+\.js\.map$/));
+		const counterMap = dir.find((file) => file.match(/^Counter\.[\w-]+\.js\.map$/));
 		assert.ok(counterMap);
 	});
 
 	it('Builds non-empty sourcemap', async () => {
-		const map = await fixture.readFile('renderers.mjs.map');
-		assert.equal(map.includes('"sources":[]'), false);
+		const assets = await fixture.readdir('/_astro');
+		const maps = assets.filter((file) => file.endsWith('.map'));
+		assert.ok(maps.length > 0, 'got source maps');
+		for (const mapName of maps) {
+			const filename = `/_astro/${mapName}`;
+			const map = await fixture.readFile(filename);
+			assert.equal(map.includes('"sources":[]'), false);
+		}
 	});
 });
